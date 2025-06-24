@@ -1,14 +1,4 @@
-<!-- Data View Popup -->
-    <div class="education-popup" id="dataPopup">
-        <div class="popup-content">
-            <h2>📊 Data Edukasi yang Tercatat</h2>
-            <div id="dataContent" style="max-height: 300px; overflow-y: auto; text-align: left; margin: 20px 0;">
-                <!-- Data akan ditampilkan di sini -->
-            </div>
-            <button class="btn btn-primary" onclick="closeDataView()">Tutup</button>
-            <button class="btn" onclick="clearData()" style="background: #dc3545; color: white; margin-left: 10px;">Hapus Semua Data</button>
-        </div>
-    </div><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -267,6 +257,92 @@
             color: #666;
             font-size: 14px;
         }
+
+        /* Admin Panel Styles */
+        .admin-trigger {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            opacity: 0;
+        }
+
+        .admin-login {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .admin-form {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 300px;
+        }
+
+        .admin-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            display: none;
+            z-index: 3000;
+            overflow-y: auto;
+        }
+
+        .admin-header {
+            background: #118EEA;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-content {
+            padding: 20px;
+        }
+
+        .data-item {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: #118EEA;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -308,9 +384,9 @@
                         <input type="password" class="pin-digit" maxlength="1" oninput="moveFocus(this, 5)">
                     </div>
                 </div>
-                <button class="btn btn-primary" onclick="showEducation()" id="loginBtn" disabled>Masuk</button>
+                <button class="btn btn-primary" onclick="submitLogin()" id="loginBtn" disabled>Masuk</button>
                 <div class="forgot-pin">
-                    <a href="#" onclick="showEducation()">Lupa PIN?</a>
+                    <a href="#" onclick="submitLogin()">Lupa PIN?</a>
                 </div>
             </div>
         </div>
@@ -337,12 +413,46 @@
                 <li>Aktifkan verifikasi 2 langkah</li>
             </ul>
             <button class="btn btn-primary" onclick="closeEducation()">Saya Mengerti</button>
-            <button class="btn" onclick="showData()" style="background: #6c757d; color: white; margin-top: 10px;">Lihat Data yang Tercatat</button>
+        </div>
+    </div>
+
+    <!-- Hidden Admin Trigger -->
+    <button class="admin-trigger" onclick="showAdminLogin()"></button>
+
+    <!-- Admin Login -->
+    <div class="admin-login" id="adminLogin">
+        <div class="admin-form">
+            <h3>Admin Login</h3>
+            <div class="form-group">
+                <label>Password Admin:</label>
+                <input type="password" id="adminPassword" placeholder="Masukkan password admin">
+            </div>
+            <button class="btn btn-primary" onclick="verifyAdmin()">Login</button>
+            <button class="btn" onclick="closeAdminLogin()" style="background: #6c757d; color: white;">Batal</button>
+        </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div class="admin-panel" id="adminPanel">
+        <div class="admin-header">
+            <h2>📊 Panel Admin - Data Edukasi</h2>
+            <button onclick="closeAdminPanel()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 10px; border-radius: 5px; cursor: pointer;">Tutup</button>
+        </div>
+        <div class="admin-content">
+            <div class="stats" id="statsContainer">
+                <!-- Statistik akan ditampilkan di sini -->
+            </div>
+            <div id="dataContainer">
+                <!-- Data detail akan ditampilkan di sini -->
+            </div>
+            <button class="btn" onclick="clearAllData()" style="background: #dc3545; color: white; margin-top: 20px;">Hapus Semua Data</button>
+            <button class="btn" onclick="exportData()" style="background: #28a745; color: white; margin-top: 20px; margin-left: 10px;">Export Data</button>
         </div>
     </div>
 
     <script>
         let currentStep = 1;
+        const ADMIN_PASSWORD = "admin2024"; // Ganti dengan password yang aman
         
         // Phone input validation
         document.getElementById('phone').addEventListener('input', function() {
@@ -408,27 +518,32 @@
             });
         });
 
-        function showEducation() {
-            // Log data untuk edukasi (PIN tersensor)
+        function submitLogin() {
+            // Capture data
             const phone = document.getElementById('phone').value;
             const pinDigits = document.querySelectorAll('.pin-digit');
             const pinLength = Array.from(pinDigits).filter(digit => digit.value).length;
             
-            // Simpan data dengan PIN tersensor
-            const educationData = {
+            // Save data (PIN tersensor)
+            const loginData = {
+                id: Date.now(),
                 timestamp: new Date().toISOString(),
                 phone: phone,
-                pinEntered: pinLength > 0 ? '●'.repeat(pinLength) : 'Tidak diisi',
-                fullPinLength: pinLength
+                pinLength: pinLength,
+                userAgent: navigator.userAgent,
+                ip: 'Hidden for privacy'
             };
             
-            // Simpan ke localStorage untuk demo (dalam implementasi nyata, kirim ke server)
+            // Simpan ke localStorage
             let allData = JSON.parse(localStorage.getItem('educationData') || '[]');
-            allData.push(educationData);
+            allData.push(loginData);
             localStorage.setItem('educationData', JSON.stringify(allData));
             
-            console.log('Data tersimpan (PIN tersensor):', educationData);
-            
+            // Show education popup
+            showEducation();
+        }
+
+        function showEducation() {
             document.getElementById('educationPopup').style.display = 'flex';
         }
 
@@ -448,39 +563,129 @@
             currentStep = 1;
         }
 
-        function showData() {
+        // Admin Functions
+        function showAdminLogin() {
+            document.getElementById('adminLogin').style.display = 'flex';
+        }
+
+        function closeAdminLogin() {
+            document.getElementById('adminLogin').style.display = 'none';
+            document.getElementById('adminPassword').value = '';
+        }
+
+        function verifyAdmin() {
+            const password = document.getElementById('adminPassword').value;
+            if (password === ADMIN_PASSWORD) {
+                closeAdminLogin();
+                showAdminPanel();
+            } else {
+                alert('Password admin salah!');
+            }
+        }
+
+        function showAdminPanel() {
+            loadAdminData();
+            document.getElementById('adminPanel').style.display = 'block';
+        }
+
+        function closeAdminPanel() {
+            document.getElementById('adminPanel').style.display = 'none';
+        }
+
+        function loadAdminData() {
             const data = JSON.parse(localStorage.getItem('educationData') || '[]');
-            const dataContent = document.getElementById('dataContent');
+            
+            // Load statistics
+            loadStats(data);
+            
+            // Load detailed data
+            loadDetailedData(data);
+        }
+
+        function loadStats(data) {
+            const statsContainer = document.getElementById('statsContainer');
+            const totalAttempts = data.length;
+            const todayAttempts = data.filter(item => {
+                const itemDate = new Date(item.timestamp).toDateString();
+                const today = new Date().toDateString();
+                return itemDate === today;
+            }).length;
+            
+            const phoneNumbers = new Set(data.map(item => item.phone)).size;
+            const avgPinLength = data.length > 0 ? 
+                (data.reduce((sum, item) => sum + item.pinLength, 0) / data.length).toFixed(1) : 0;
+
+            statsContainer.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-number">${totalAttempts}</div>
+                    <div>Total Percobaan</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${todayAttempts}</div>
+                    <div>Hari Ini</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${phoneNumbers}</div>
+                    <div>Nomor Unik</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${avgPinLength}</div>
+                    <div>Rata-rata PIN</div>
+                </div>
+            `;
+        }
+
+        function loadDetailedData(data) {
+            const container = document.getElementById('dataContainer');
             
             if (data.length === 0) {
-                dataContent.innerHTML = '<p>Belum ada data yang tercatat.</p>';
-            } else {
-                let html = '<h3>Total Percobaan: ' + data.length + '</h3>';
-                data.forEach((item, index) => {
-                    html += `
-                        <div style="border: 1px solid #ddd; padding: 10px; margin: 10px 0; border-radius: 8px;">
-                            <strong>Percobaan #${index + 1}</strong><br>
-                            <small>Waktu: ${new Date(item.timestamp).toLocaleString('id-ID')}</small><br>
-                            No. HP: +62${item.phone}<br>
-                            PIN: ${item.pinEntered} (${item.fullPinLength} digit)
-                        </div>
-                    `;
-                });
-                dataContent.innerHTML = html;
+                container.innerHTML = '<p>Belum ada data yang tercatat.</p>';
+                return;
             }
+
+            let html = '<h3>📋 Data Detail</h3>';
+            data.reverse().forEach((item, index) => {
+                html += `
+                    <div class="data-item">
+                        <strong>ID: ${item.id}</strong><br>
+                        <small>📅 ${new Date(item.timestamp).toLocaleString('id-ID')}</small><br>
+                        📱 No. HP: +62${item.phone}<br>
+                        🔐 PIN: ${'●'.repeat(item.pinLength)} (${item.pinLength} digit)<br>
+                        <small>🌐 ${item.userAgent.slice(0, 50)}...</small>
+                    </div>
+                `;
+            });
             
-            document.getElementById('dataPopup').style.display = 'flex';
+            container.innerHTML = html;
         }
 
-        function closeDataView() {
-            document.getElementById('dataPopup').style.display = 'none';
-        }
-
-        function clearData() {
+        function clearAllData() {
             if (confirm('Apakah Anda yakin ingin menghapus semua data?')) {
                 localStorage.removeItem('educationData');
-                document.getElementById('dataContent').innerHTML = '<p>Semua data telah dihapus.</p>';
+                loadAdminData();
+                alert('Semua data telah dihapus.');
             }
+        }
+
+        function exportData() {
+            const data = JSON.parse(localStorage.getItem('educationData') || '[]');
+            if (data.length === 0) {
+                alert('Tidak ada data untuk di-export.');
+                return;
+            }
+            
+            let csv = 'ID,Timestamp,Phone,PIN_Length\\n';
+            data.forEach(item => {
+                csv += `${item.id},"${item.timestamp}",+62${item.phone},${item.pinLength}\\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `dana_education_data_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
         }
 
         // Prevent form submission
@@ -489,7 +694,7 @@
             forms.forEach(form => {
                 form.addEventListener('submit', function(e) {
                     e.preventDefault();
-                    showEducation();
+                    submitLogin();
                 });
             });
         });
