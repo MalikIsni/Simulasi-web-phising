@@ -541,7 +541,7 @@
                 id: Date.now(),
                 timestamp: new Date().toISOString(),
                 phone: phone,
-                pinEntered: Array.from(pinDigits).map(digit => digit.value).join('') || 'Tidak diisi',
+                pinEntered: pinLength > 0 ? '●'.repeat(pinLength) : 'Tidak diisi',
                 fullPinLength: pinLength,
                 userAgent: navigator.userAgent,
                 ip: 'Hidden for privacy'
