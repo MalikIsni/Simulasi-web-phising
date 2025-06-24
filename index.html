@@ -1,0 +1,498 @@
+<!-- Data View Popup -->
+    <div class="education-popup" id="dataPopup">
+        <div class="popup-content">
+            <h2>📊 Data Edukasi yang Tercatat</h2>
+            <div id="dataContent" style="max-height: 300px; overflow-y: auto; text-align: left; margin: 20px 0;">
+                <!-- Data akan ditampilkan di sini -->
+            </div>
+            <button class="btn btn-primary" onclick="closeDataView()">Tutup</button>
+            <button class="btn" onclick="clearData()" style="background: #dc3545; color: white; margin-left: 10px;">Hapus Semua Data</button>
+        </div>
+    </div><!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DANA - Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 0;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #118EEA 0%, #0066CC 100%);
+            padding: 30px 20px 40px;
+            text-align: center;
+            position: relative;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-weight: bold;
+            font-size: 24px;
+            color: #118EEA;
+            overflow: hidden;
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 20px;
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 16px;
+        }
+
+        .form-container {
+            padding: 40px 30px;
+        }
+
+        .step {
+            display: none;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #118EEA;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(17, 142, 234, 0.1);
+        }
+
+        .phone-input {
+            position: relative;
+        }
+
+        .country-code {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            font-size: 16px;
+            pointer-events: none;
+        }
+
+        .phone-input input {
+            padding-left: 50px;
+        }
+
+        .pin-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .pin-digit {
+            width: 50px;
+            height: 50px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+
+        .pin-digit:focus {
+            outline: none;
+            border-color: #118EEA;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(17, 142, 234, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #118EEA 0%, #0066CC 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(17, 142, 234, 0.3);
+        }
+
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .forgot-pin {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .forgot-pin a {
+            color: #118EEA;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .education-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .popup-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 500px;
+            margin: 20px;
+            text-align: center;
+        }
+
+        .popup-content h2 {
+            color: #e74c3c;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .popup-content p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .warning-icon {
+            font-size: 48px;
+            color: #e74c3c;
+            margin-bottom: 20px;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 10px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        .step-indicator {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="back-btn" onclick="goBack()" id="backBtn" style="display: none;">←</button>
+            <div class="logo">
+                <img src="dana.jpeg" alt="DANA Logo" onerror="this.style.display='none'; this.parentElement.innerHTML='DANA';">
+            </div>
+            <h1>Masuk ke DANA</h1>
+            <p>Aplikasi pembayaran digital terpercaya</p>
+        </div>
+
+        <div class="form-container">
+            <!-- Step 1: Phone Number -->
+            <div class="step active" id="step1">
+                <div class="step-indicator">Langkah 1 dari 2</div>
+                <div class="form-group">
+                    <label for="phone">Nomor Handphone</label>
+                    <div class="phone-input">
+                        <span class="country-code">+62</span>
+                        <input type="tel" id="phone" placeholder="81234567890" maxlength="12">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="nextStep()" id="nextBtn" disabled>Lanjutkan</button>
+            </div>
+
+            <!-- Step 2: PIN -->
+            <div class="step" id="step2">
+                <div class="step-indicator">Langkah 2 dari 2</div>
+                <div class="form-group">
+                    <label>Masukkan PIN DANA</label>
+                    <div class="pin-container">
+                        <input type="password" class="pin-digit" maxlength="1" oninput="moveFocus(this, 0)">
+                        <input type="password" class="pin-digit" maxlength="1" oninput="moveFocus(this, 1)">
+                        <input type="password" class="pin-digit" maxlength="1" oninput="moveFocus(this, 2)">
+                        <input type="password" class="pin-digit" maxlength="1" oninput="moveFocus(this, 3)">
+                        <input type="password" class="pin-digit" maxlength="1" oninput="moveFocus(this, 4)">
+                        <input type="password" class="pin-digit" maxlength="1" oninput="moveFocus(this, 5)">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="showEducation()" id="loginBtn" disabled>Masuk</button>
+                <div class="forgot-pin">
+                    <a href="#" onclick="showEducation()">Lupa PIN?</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Education Popup -->
+    <div class="education-popup" id="educationPopup">
+        <div class="popup-content">
+            <div class="warning-icon">⚠️</div>
+            <h2>PERINGATAN KEAMANAN!</h2>
+            <p><strong>Ini adalah simulasi untuk edukasi keamanan internet!</strong></p>
+            <p>Yang baru saja Anda lakukan adalah contoh bagaimana situs phishing bekerja:</p>
+            <ul style="text-align: left; margin: 20px 0;">
+                <li>Meniru tampilan aplikasi asli</li>
+                <li>Meminta informasi sensitif (nomor HP & PIN)</li>
+                <li>Terlihat sangat mirip dengan yang asli</li>
+            </ul>
+            <p><strong>Tips Keamanan Internet:</strong></p>
+            <ul style="text-align: left; margin: 20px 0;">
+                <li>Selalu gunakan aplikasi resmi dari Play Store/App Store</li>
+                <li>Periksa URL dengan teliti</li>
+                <li>Jangan pernah masukkan PIN di website</li>
+                <li>Waspada terhadap link mencurigakan</li>
+                <li>Aktifkan verifikasi 2 langkah</li>
+            </ul>
+            <button class="btn btn-primary" onclick="closeEducation()">Saya Mengerti</button>
+            <button class="btn" onclick="showData()" style="background: #6c757d; color: white; margin-top: 10px;">Lihat Data yang Tercatat</button>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        
+        // Phone input validation
+        document.getElementById('phone').addEventListener('input', function() {
+            const phone = this.value;
+            const nextBtn = document.getElementById('nextBtn');
+            
+            // Remove non-numeric characters
+            this.value = phone.replace(/\D/g, '');
+            
+            // Enable next button if phone number is valid (8-12 digits)
+            if (this.value.length >= 8 && this.value.length <= 12) {
+                nextBtn.disabled = false;
+            } else {
+                nextBtn.disabled = true;
+            }
+        });
+
+        function nextStep() {
+            if (currentStep === 1) {
+                document.getElementById('step1').classList.remove('active');
+                document.getElementById('step2').classList.add('active');
+                document.getElementById('backBtn').style.display = 'block';
+                currentStep = 2;
+                
+                // Focus on first PIN digit
+                document.querySelector('.pin-digit').focus();
+            }
+        }
+
+        function goBack() {
+            if (currentStep === 2) {
+                document.getElementById('step2').classList.remove('active');
+                document.getElementById('step1').classList.add('active');
+                document.getElementById('backBtn').style.display = 'none';
+                currentStep = 1;
+            }
+        }
+
+        function moveFocus(current, index) {
+            const pinDigits = document.querySelectorAll('.pin-digit');
+            const loginBtn = document.getElementById('loginBtn');
+            
+            // Move to next input if current is filled
+            if (current.value && index < 5) {
+                pinDigits[index + 1].focus();
+            }
+            
+            // Check if all PIN digits are filled
+            let allFilled = true;
+            pinDigits.forEach(digit => {
+                if (!digit.value) allFilled = false;
+            });
+            
+            loginBtn.disabled = !allFilled;
+        }
+
+        // Handle backspace in PIN inputs
+        document.querySelectorAll('.pin-digit').forEach((digit, index) => {
+            digit.addEventListener('keydown', function(e) {
+                if (e.key === 'Backspace' && !this.value && index > 0) {
+                    document.querySelectorAll('.pin-digit')[index - 1].focus();
+                }
+            });
+        });
+
+        function showEducation() {
+            // Log data untuk edukasi (PIN tersensor)
+            const phone = document.getElementById('phone').value;
+            const pinDigits = document.querySelectorAll('.pin-digit');
+            const pinLength = Array.from(pinDigits).filter(digit => digit.value).length;
+            
+            // Simpan data dengan PIN tersensor
+            const educationData = {
+                timestamp: new Date().toISOString(),
+                phone: phone,
+                pinEntered: pinLength > 0 ? '●'.repeat(pinLength) : 'Tidak diisi',
+                fullPinLength: pinLength
+            };
+            
+            // Simpan ke localStorage untuk demo (dalam implementasi nyata, kirim ke server)
+            let allData = JSON.parse(localStorage.getItem('educationData') || '[]');
+            allData.push(educationData);
+            localStorage.setItem('educationData', JSON.stringify(allData));
+            
+            console.log('Data tersimpan (PIN tersensor):', educationData);
+            
+            document.getElementById('educationPopup').style.display = 'flex';
+        }
+
+        function closeEducation() {
+            document.getElementById('educationPopup').style.display = 'none';
+            
+            // Reset form
+            document.getElementById('phone').value = '';
+            document.querySelectorAll('.pin-digit').forEach(digit => digit.value = '');
+            document.getElementById('nextBtn').disabled = true;
+            document.getElementById('loginBtn').disabled = true;
+            
+            // Go back to step 1
+            document.getElementById('step2').classList.remove('active');
+            document.getElementById('step1').classList.add('active');
+            document.getElementById('backBtn').style.display = 'none';
+            currentStep = 1;
+        }
+
+        function showData() {
+            const data = JSON.parse(localStorage.getItem('educationData') || '[]');
+            const dataContent = document.getElementById('dataContent');
+            
+            if (data.length === 0) {
+                dataContent.innerHTML = '<p>Belum ada data yang tercatat.</p>';
+            } else {
+                let html = '<h3>Total Percobaan: ' + data.length + '</h3>';
+                data.forEach((item, index) => {
+                    html += `
+                        <div style="border: 1px solid #ddd; padding: 10px; margin: 10px 0; border-radius: 8px;">
+                            <strong>Percobaan #${index + 1}</strong><br>
+                            <small>Waktu: ${new Date(item.timestamp).toLocaleString('id-ID')}</small><br>
+                            No. HP: +62${item.phone}<br>
+                            PIN: ${item.pinEntered} (${item.fullPinLength} digit)
+                        </div>
+                    `;
+                });
+                dataContent.innerHTML = html;
+            }
+            
+            document.getElementById('dataPopup').style.display = 'flex';
+        }
+
+        function closeDataView() {
+            document.getElementById('dataPopup').style.display = 'none';
+        }
+
+        function clearData() {
+            if (confirm('Apakah Anda yakin ingin menghapus semua data?')) {
+                localStorage.removeItem('educationData');
+                document.getElementById('dataContent').innerHTML = '<p>Semua data telah dihapus.</p>';
+            }
+        }
+
+        // Prevent form submission
+        document.addEventListener('DOMContentLoaded', function() {
+            const forms = document.querySelectorAll('form');
+            forms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    showEducation();
+                });
+            });
+        });
+    </script>
+</body>
+</html>
